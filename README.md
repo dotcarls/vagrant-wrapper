@@ -34,10 +34,6 @@ This snippet will get the available VMs, then run through available actions (up,
 import Vagrant from "vagrant-wrapper";
 const v = new Vagrant();
 
-// Enums:
-console.log(v.enums);
-console.log(v.errorEnums);
-
 v.init((err, data) => {
     console.log("Init data: ", data);
     // init will return the global status array
@@ -81,11 +77,11 @@ v.init((err, data) => {
     });
 });
 
-v.on('VAGRANT_STDOUT', (data) => {
+v.on(v.enums.VAGRANT_STDOUT, (data) => {
     console.log("STDOUT: ", data);
 });
 
-v.on('VAGRANT_STDERR', (data) => {
+v.on(v.enums.VAGRANT_STDOUT, (data) => {
     console.log("STDERR: ", data);
 });
 ```
@@ -141,11 +137,11 @@ v.on(enums.VAGRANT_RESPONSE, (response) => {
     }
 });
 
-v.on('VAGRANT_STDOUT', (data) => {
+v.on(enums.VAGRANT_STDOUT, (data) => {
     console.log("STDOUT: ", data);
 });
 
-v.on('VAGRANT_STDERR', (data) => {
+v.on(enums.VAGRANT_STDERR, (data) => {
     console.log("STDERR: ", data);
 });
 ```
@@ -197,7 +193,7 @@ Vagrant commands can be triggered via events using the following syntax:
 const Vagrant = require('vagrant-wrapper');
 const v = new Vagrant();
 
-v.emit(enums.VAGRANT_REQUEST, { type: enums.GLOBAL_STATUS });
+v.emit(v.enums.VAGRANT_REQUEST, { type: enums.GLOBAL_STATUS });
 ```
 
 If the command requires a parameter such as an ID, it should be called like so:
@@ -206,7 +202,7 @@ If the command requires a parameter such as an ID, it should be called like so:
 const Vagrant = require('vagrant-wrapper');
 const v = new Vagrant();
 
-v.emit(enums.VAGRANT_REQUEST, { type: enums.VAGRANT_VM_STATUS, params: { id: '<someId>' } });
+v.emit(v.enums.VAGRANT_REQUEST, { type: enums.VAGRANT_VM_STATUS, params: { id: '<someId>' } });
 ```
 
 Still to come:

@@ -1,4 +1,4 @@
-const V = require('../dist');
+const V = require('vagrant-wrapper');
 const v = new V();
 
 const enums = v.enums;
@@ -46,10 +46,10 @@ v.on(enums.VAGRANT_RESPONSE, (response) => {
     }
 });
 
-v.on('VAGRANT_STDOUT', (data) => {
+v.on(enums.VAGRANT_STDOUT, (data) => {
     console.log("STDOUT: ", data);
 });
 
-v.on('VAGRANT_STDERR', (data) => {
+v.on(enums.VAGRANT_STDERR, (data) => {
     console.log("STDERR: ", data);
 });
