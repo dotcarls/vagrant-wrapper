@@ -10,11 +10,15 @@
 
 This is an experimental wrapper for Vagrant. Instead of attaching to specific directories and calling vagrant, this module attempts to parse the global status and control VMs according to their assigned ID. It supports both callback and event style interactions.
 
-The module will not call any commands or do anything until `init()` is called (or it receives an init request event, more on that in a bit).
+The module will not be able to call any commands or do anything until `init()` is called (or it receives an init request event, more on that in a bit). `init()` is identical to `getGlobalStatus()`, and its only purpose is to populate the globalStatus array which is used by other methods to validate IDs and such.
 
 To see what's going on, simply listen for 'VAGRANT_STDOUT' or 'VAGRANT_STDERR' events. They are emitted throughout command execution. Each individual action can be listened to using the format 'VAGRANT_{ACTION}_LOG'.
 
 Events can also be used to request actions and receive responses. An event from the client must be of the type 'VAGRANT_REQUEST', and responses from the module are of the type 'VAGRANT_RESPONSE'. To prevent code from breaking should the values of these strings change, it is best to reference the enums instead of using string literals.
+
+By default, `vagrant global-status` is not called with the `--prune` option, but this can be done through the `pruneGlobalStatus()` method. Do note that this will remove 'invalid' entries reported by `vagrant global-status`, so use with caution.
+
+Any action that acts on a specific VM requires its ID as assigned by Vagrant, and these actions will return the ID as the result of the action.
 
 ## Install
 
@@ -86,10 +90,10 @@ v.on('VAGRANT_STDERR', (data) => {
 });
 ```
 
-This same control flow could be done using events:
+A similar control flow could be done using events:
 
 ```js
-const V = require('./dist');
+const V = require('vagrant-wrapper');
 const v = new V();
 
 const enums = v.enums;
@@ -159,13 +163,59 @@ v.suspendVm(id, callback);
 v.haltVm(id, callback);
 ```
 
-By default, nothing will be executed until `init()` is called, either through an event or a function call. Once this occurs, globalStatus is populated and functions will run. By default, `vagrant global-status` is not called with the `--prune` option, but this can be done through the `pruneGlobalStatus()` method.
+
+Enums are as follows:
+
+```js
+const Enums = {
+    VAGRANT_INIT: 'VAGRANT_INIT',
+    VAGRANT_GLOBAL_STATUS: 'VAGRANT_GLOBAL_STATUS',
+    VAGRANT_GLOBAL_STATUS_LOG: 'VAGRANT_GLOBAL_STATUS_LOG',
+    VAGRANT_PRUNE_GLOBAL_STATUS: 'VAGRANT_PRUNE_GLOBAL_STATUS',
+    VAGRANT_PRUNE_GLOBAL_STATUS_LOG: 'VAGRANT_PRUNE_GLOBAL_STATUS_LOG',
+    VAGRANT_START_VM: 'VAGRANT_START_VM',
+    VAGRANT_START_VM_LOG: 'VAGRANT_START_VM_LOG',
+    VAGRANT_SUSPEND_VM: 'VAGRANT_SUSPEND_VM',
+    VAGRANT_SUSPEND_VM_LOG: 'VAGRANT_SUSPEND_VM_LOG',
+    VAGRANT_HALT_VM: 'VAGRANT_HALT_VM',
+    VAGRANT_HALT_VM_LOG: 'VAGRANT_HALT_VM_LOG',
+    VAGRANT_VM_STATUS: 'VAGRANT_VM_STATUS',
+    VAGRANT_STDOUT: 'VAGRANT_STDOUT',
+    VAGRANT_STDERR: 'VAGRANT_STDERR',
+    VAGRANT_ACTION_ERROR: 'VAGRANT_ACTION_ERROR',
+    VAGRANT_EVENT_REQUEST: 'VAGRANT_EVENT_REQUEST',
+    VAGRANT_ACTION_RESPONSE: 'VAGRANT_ACTION_RESPONSE',
+    VAGRANT_EVENT_RESPONSE: 'VAGRANT_EVENT_RESPONSE',
+    VAGRANT_REQUEST: 'VAGRANT_REQUEST',
+    VAGRANT_RESPONSE: 'VAGRANT_RESPONSE',
+};
+```
+
+Vagrant commands can be triggered via events using the following syntax:
+
+```js
+const Vagrant = require('vagrant-wrapper');
+const v = new Vagrant();
+
+v.emit(enums.VAGRANT_REQUEST, { type: enums.GLOBAL_STATUS });
+```
+
+If the command requires a parameter such as an ID, it should be called like so:
+
+```js
+const Vagrant = require('vagrant-wrapper');
+const v = new Vagrant();
+
+v.emit(enums.VAGRANT_REQUEST, { type: enums.VAGRANT_VM_STATUS, params: { id: '<someId>' } });
+```
 
 Still to come:
 
-    - Create / destroy VMs
-    - Vagrantfile generation
-    - Tests
+- Create / destroy VMs
+- Vagrantfile generation
+- Tests
+- Better error logic (execution code is ignored and `stderr` is used to indicate an error...)
+- Make badges all purdy like the cool modules
 
 
 ## License
@@ -173,15 +223,15 @@ Still to come:
 MIT © [Tim Carlson](http://github.com/dotcarls)
 
 [npm-url]: https://npmjs.org/package/vagrant-wrapper
-[npm-image]: https://img.shields.io/npm/v/vagrant-wrapper.svg?style=flat-square
+[npm-image]: https://img.shields.io/npm/dotcarls/vagrant-wrapper.svg?style=flat-square
 
-[travis-url]: https://travis-ci.org/t/vagrant-wrapper
-[travis-image]: https://img.shields.io/travis/t/vagrant-wrapper.svg?style=flat-square
+[travis-url]: https://travis-ci.org/dotcarls/vagrant-wrapper
+[travis-image]: https://img.shields.io/travis/dotcarls/vagrant-wrapper.svg?style=flat-square
 
 [coveralls-url]: https://coveralls.io/r/t/vagrant-wrapper
-[coveralls-image]: https://img.shields.io/coveralls/t/vagrant-wrapper.svg?style=flat-square
+[coveralls-image]: https://img.shields.io/coveralls/dotcarls/vagrant-wrapper.svg?style=flat-square
 
 [depstat-url]: https://david-dm.org/t/vagrant-wrapper
-[depstat-image]: https://david-dm.org/t/vagrant-wrapper.svg?style=flat-square
+[depstat-image]: https://david-dm.org/dotcarls/vagrant-wrapper.svg?style=flat-square
 
 [download-badge]: http://img.shields.io/npm/dm/vagrant-wrapper.svg?style=flat-square
