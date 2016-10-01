@@ -1,6 +1,6 @@
 {
   "name": "vagrant-wrapper",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A wrapper for the Vagrant CLI toool in NodeJS",
   "main": "dist/index.js",
   "files": [
