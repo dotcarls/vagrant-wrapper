@@ -19,7 +19,7 @@ Events can also be used to request actions and receive responses. An event from 
 ## Install
 
 ```sh
-npm i -D vagrant-wrapper
+npm install --save vagrant-wrapper
 ```
 
 ## Usage
@@ -166,7 +166,7 @@ Still to come:
     - Create / destroy VMs
     - Vagrantfile generation
     - Tests
-    
+
 
 ## License
 
