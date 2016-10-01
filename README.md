@@ -223,7 +223,7 @@ Still to come:
 MIT © [Tim Carlson](http://github.com/dotcarls)
 
 [npm-url]: https://npmjs.org/package/vagrant-wrapper
-[npm-image]: https://img.shields.io/npm/dotcarls/vagrant-wrapper.svg?style=flat-square
+[npm-image]: https://img.shields.io/npm/v/vagrant-wrapper.svg?style=flat-square
 
 [travis-url]: https://travis-ci.org/dotcarls/vagrant-wrapper
 [travis-image]: https://img.shields.io/travis/dotcarls/vagrant-wrapper.svg?style=flat-square
