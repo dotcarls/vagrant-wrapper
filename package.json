@@ -5,7 +5,7 @@
     "bin": "dist/bin/cli.js",
     "main": "dist/lib/index.js",
     "files": [
-        "dist/",
+        "dist/"
     ],
     "keywords": [
         "vagrant",
