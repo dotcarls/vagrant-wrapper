@@ -47,9 +47,9 @@ v.on(enums.VAGRANT_RESPONSE, (response) => {
 });
 
 v.on(enums.VAGRANT_STDOUT, (data) => {
-    console.log("STDOUT: ", data);
+    console.log('STDOUT: ', data);
 });
 
 v.on(enums.VAGRANT_STDERR, (data) => {
-    console.log("STDERR: ", data);
+    console.log('STDERR: ', data);
 });
