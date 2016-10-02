@@ -1,4 +1,4 @@
-const V = require('../index.js');
+const V = require('../../index.js');
 const v = new V();
 
 const enums = v.enums;

@@ -1,4 +1,4 @@
-import Vagrant from '../index.js';
+import Vagrant from '../../dist/index.js';
 const v = new Vagrant();
 
 v.init((err, data) => {
