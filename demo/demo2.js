@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var V = require('../index.js');
 var v = new V();
@@ -54,9 +54,9 @@ v.on(enums.VAGRANT_RESPONSE, function (response) {
 });
 
 v.on(enums.VAGRANT_STDOUT, function (data) {
-    console.log("STDOUT: ", data);
+    console.log('STDOUT: ', data);
 });
 
 v.on(enums.VAGRANT_STDERR, function (data) {
-    console.log("STDERR: ", data);
+    console.log('STDERR: ', data);
 });
