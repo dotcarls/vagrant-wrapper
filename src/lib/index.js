@@ -268,18 +268,9 @@ class Vagrant extends EventEmitter {
 
 
     updateVmStatus(newStatus) {
-        let flag = true;
+        const newGlobalStatus = [newStatus, ...this.data.globalStatus.filter((status) => status.id !== newStatus.id)];
 
-        this.data.globalStatus.forEach((status) => {
-            if (status.id === newStatus.id) {
-                status = newStatus;
-                flag = false;
-            }
-        });
-
-        if (flag) {
-            this.data.globalStatus.push(newStatus);
-        }
+        this.data.globalStatus = newGlobalStatus;
     }
 
     callVagrant(action = null, callback = null, params = null) {

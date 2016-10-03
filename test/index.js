@@ -36,6 +36,14 @@ const release22Obj = {
     directory: '/Users/Some.User/Work/Virtual Machines/Vagrant/release_2.2',
 };
 
+const release22StoppedObj = {
+    id: '1fd872d',
+    name: 'default',
+    provider: 'parallels',
+    state: 'stopped',
+    directory: '/Users/Some.User/Work/Virtual Machines/Vagrant/release_2.2',
+};
+
 const globalStatus = [masterObj, release22Obj];
 
 function isM(t, input, expected) {
@@ -72,4 +80,25 @@ test((t) => {
             t.pass();
         }
     });
+});
+
+
+test.serial((t) => {
+    V.updateVmStatus(masterObj);
+    t.deepEqual(V.data.globalStatus, [masterObj]);
+});
+
+test.serial((t) => {
+    V.updateVmStatus(release22Obj);
+
+    t.deepEqual(V.data.globalStatus.filter((status) => status.id === release22Obj.id)[0], release22Obj);
+});
+
+test.serial((t) => {
+    V.updateVmStatus(release22StoppedObj);
+    t.pass();
+});
+
+test.serial((t) => {
+    t.deepEqual(V.data.globalStatus.filter((status) => status.id === release22StoppedObj.id)[0], release22StoppedObj);
 });
