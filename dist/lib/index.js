@@ -1,5 +1,7 @@
 'use strict';
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
@@ -64,7 +66,7 @@ var Vagrant = function (_EventEmitter) {
             return _this.eventHandler(data);
         });
 
-        _this.actions = Object.assign.apply(Object, _toConsumableArray(Object.keys(Enums).map(function (key) {
+        _this.actions = _extends.apply(undefined, _toConsumableArray(Object.keys(Enums).map(function (key) {
             return _defineProperty({}, key, { type: Enums[key] });
         })));
         return _this;
@@ -113,7 +115,7 @@ var Vagrant = function (_EventEmitter) {
                 });
 
                 if (strArray[0] && strArray[0].length === 7) {
-                    var newObj = Object.assign({}, defaultObj);
+                    var newObj = _extends({}, defaultObj);
 
                     newObj.id = strArray[0];
                     newObj.name = strArray[1];
@@ -468,7 +470,7 @@ var Vagrant = function (_EventEmitter) {
                                         });
 
                                         if (strArray[0] && strArray[0].length === 7) {
-                                            var newObj = Object.assign({}, defaultObj);
+                                            var newObj = _extends({}, defaultObj);
 
                                             newObj.id = strArray[0];
                                             newObj.name = strArray[1];
