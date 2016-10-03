@@ -63,7 +63,35 @@ By default, `vagrant global-status` is not called with the `--prune` option, but
 
 Any action that acts on a specific VM requires its ID as assigned by Vagrant, and these actions will return the ID as the result of the action.
 
-The following scripts are also available in the demo directory:
+Vagrant commands can be triggered in a callback fashion using the following syntax:
+
+```js
+const Vagrant = require('vagrant-wrapper');
+const v = new Vagrant();
+
+v.init((err, res) => {
+    console.log(err, res);
+    // res will be an object of the following form:
+    // res = {
+    //     action: <action>,
+    //     error: <error>,
+    //     result: <result>,
+    //     data: <result.data>,
+    // };
+    //
+    // res.result = {
+    //     output: {
+    //         stdout: <stdout>
+    //         stderr: <stderr>
+    //     },
+    //    code: <code>,
+    //    data: <data>,
+    // };
+
+    // err will be equal to res.result.code if code
+    // returned from the Vagrant CLI is nonzero
+});
+```
 
 Vagrant commands can be triggered via events using the following syntax:
 
@@ -72,7 +100,7 @@ const Vagrant = require('vagrant-wrapper');
 const v = new Vagrant();
 
 v.emit(v.enums.VAGRANT_REQUEST, {
-    type: enums.GLOBAL_STATUS
+    type: v.enums.VAGRANT_INIT
 });
 ```
 
@@ -92,44 +120,44 @@ v.emit(v.enums.VAGRANT_REQUEST, {
 
 ### Callback style
 
-```sh
-import Vagrant from '../../dist/index.js';
+```js
+import Vagrant from 'vagrant-wrapper';
 const v = new Vagrant();
 
-v.init((err, data) => {
-    console.log('Init data: ', data);
+v.init((err, res) => {
+    console.log('Init res: ', res);
     // init will return the global status array
     // -> [vm1, vm2]
     // where vm1 and vm2 are objects containing id, name, state, provider, and directory attributes
 
-    v.getGlobalStatus((err, data) => {
-        console.log('Global Status data: ', data);
+    v.getGlobalStatus((err, res) => {
+        console.log('Global Status res: ', res);
         // same as init
 
-        v.startVm(v.data.globalStatus[0].id, (err, data) => {
-            console.log('Start VM data: ', data);
+        v.startVm(res.data[0].id, (err, res) => {
+            console.log('Start VM res: ', res);
             // start will return the ID of the machine started
             // -> 'fc3rjd2'
 
-            v.suspendVm(data, (err, data) => {
-                console.log('SuspendVm data: ', data);
+            v.suspendVm(res.data, (err, res) => {
+                console.log('SuspendVm res: ', res);
                 // same as startVm
 
-                v.startVm(data, (err, data) => {
-                    console.log('Start VM data: ', data);
+                v.startVm(res.data, (err, res) => {
+                    console.log('Start VM res: ', res);
                     // ...
 
-                    v.haltVm(data, (err, data) => {
-                        console.log('Halt VM data: ', data);
+                    v.haltVm(res.data, (err, res) => {
+                        console.log('Halt VM res: ', res);
                         // same as startVm
 
-                        v.getVmStatus(data, (err, data) => {
-                            console.log('VM Status data: ', data);
+                        v.getVmStatus(res.data, (err, res) => {
+                            console.log('VM Status res: ', res);
                             // returns the vm object given an ID
 
-                            v.haltVm(data.id, (err, data) => {
+                            v.haltVm(res.data.id, (err, res) => {
                                 // ...
-                                console.log('Halt VM data: ', data);
+                                console.log('Halt VM res: ', res);
                             });
                         })
                     });
@@ -143,17 +171,17 @@ v.on(v.enums.VAGRANT_STDOUT, (data) => {
     console.log('STDOUT: ', data);
 });
 
-v.on(v.enums.VAGRANT_STDOUT, (data) => {
+v.on(v.enums.VAGRANT_STDERR, (data) => {
     console.log('STDERR: ', data);
 });
 ```
 
 ### Event style
 
-```sh
+```js
 'use strict';
 
-var V = require('../index.js');
+var V = require('vagrant-wrapper');
 var v = new V();
 
 var enums = v.enums;
@@ -214,6 +242,19 @@ v.on(enums.VAGRANT_STDERR, function (data) {
     console.log('STDERR: ', data);
 });
 ```
+
+## API
+
+- `init(<callback>)`
+    - Populates the globalStatus array, returns the status array if a callback is supplied
+- `getGlobalStatus(<callback>)`
+    - Populates the globalStatus array, returns the status array if a callback is supplied
+- `pruneGlobalStatus(<callback>)`
+    - Same as getGlobalStatus() but with '--prune'
+- `startVm(id, <callback>)`, `suspendVm(id, <callback>)`, `haltVm(id, <callback>)`
+    - Attempts to start, suspend, or halt a VM given its ID. Returns the id as a result if a callback is supplied.
+- `getVmStatus(id, <callback>)`
+    - Updates the globalStatus array and attempts to return the requested VMs status
 
 ## Author
 
