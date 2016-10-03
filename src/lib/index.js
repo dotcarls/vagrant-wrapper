@@ -1,7 +1,7 @@
 /**
- * @param {Type}
- * @return {Type}
- */
+* @param {Type}
+* @return {Type}
+*/
 const EventEmitter = require('events');
 const spawn = require('child_process').spawn;
 
@@ -33,7 +33,7 @@ const ErrorEnums = {
     VAGRANT_CALL_NEEDS_ACTION: 'Need an action to call vagrant',
 };
 
-export default class Vagrant extends EventEmitter {
+class Vagrant extends EventEmitter {
     constructor() {
         super();
 
@@ -47,21 +47,27 @@ export default class Vagrant extends EventEmitter {
         this.actions = Object.assign(...Object.keys(Enums).map((key) => ({ [key]: { type: Enums[key] } })));
     }
 
-    completionHandler(action = this.actions.VAGRANT_RESPONSE, err = null, data = null, callback = null) {
+    completionHandler(action = this.actions.VAGRANT_REQUEST, error = null, data = null, callback = null) {
         const result = {
             action: action,
-            error: err,
-            data: data,
+            error: error,
+            result: data,
         };
+
+        if ( data && data.data ) {
+            result.data = data.data;
+        }
 
         this.emit(this.enums.VAGRANT_RESPONSE, result);
 
         if (callback) {
-            callback(err, data);
+            callback(error, result);
         }
     }
 
     parseLine(line) {
+        let result = null;
+
         const defaultObj = {
             id: '',
             name: '',
@@ -82,29 +88,22 @@ export default class Vagrant extends EventEmitter {
                 newObj.state = strArray[3];
                 newObj.directory = line.split(`${newObj.state} `)[1].trim();
 
-                return newObj;
+                result = newObj;
             }
-        }
-    }
-
-    parseGlobalStatus(output) {
-        let result = [];
-
-        if (output && (typeof ouput === 'string' || output instanceof String)) {
-            result = output.split('\n')
-                           .map(this.parseLine)
-                           .filter((el) => typeof el !== 'undefined');
         }
 
         return result;
     }
 
-    updateGlobalStatus(globalStatus) {
-        if (globalStatus && typeof Array.isArray(globalStatus)) {
-            this.data.globalStatus = globalStatus;
-        }
+    parseGlobalStatus(output) {
+        if (output && (typeof ouput === 'string' || output instanceof String)) {
+            const result = output.split('\n')
+                                 .map(this.parseLine)
+                                 .filter((el) => el !== null);
 
-        return this.data.globalStatus;
+            return result;
+        }
+        return [];
     }
 
     init(callback = null) {
@@ -267,9 +266,33 @@ export default class Vagrant extends EventEmitter {
         }
     }
 
+
+    updateVmStatus(newStatus) {
+        let flag = true;
+
+        this.data.globalStatus.forEach((status) => {
+            if (status.id === newStatus.id) {
+                status = newStatus;
+                flag = false;
+            }
+        });
+
+        if (flag) {
+            this.data.globalStatus.push(newStatus);
+        }
+    }
+
     callVagrant(action = null, callback = null, params = null) {
+        const result = {
+            output: {
+                stderr: '',
+                stdout: '',
+            },
+            data: '',
+            code: '',
+        };
         let args = null;
-        let result = null;
+        let error = null;
 
         /* istanbul ignore next */
         if ( !action ) {
@@ -282,19 +305,19 @@ export default class Vagrant extends EventEmitter {
             switch ( action.type ) {
                 case this.enums.VAGRANT_START_VM: {
                     args = ['up', params.id];
-                    result = params.id;
+                    result.data = params.id;
                     break;
                 }
 
                 case this.enums.VAGRANT_SUSPEND_VM: {
                     args = ['suspend', params.id];
-                    result = params.id;
+                    result.data = params.id;
                     break;
                 }
 
                 case this.enums.VAGRANT_HALT_VM: {
                     args = ['halt', params.id];
-                    result = params.id;
+                    result.data = params.id;
                     break;
                 }
 
@@ -327,32 +350,58 @@ export default class Vagrant extends EventEmitter {
             if ( args ) {
                 const vagrant = spawn('vagrant', args);
                 const logKey = `${action.type}_LOG`;
-                let output = '';
-                let error = '';
 
                 vagrant.stdout.on('data', (data) => {
-                    output += data.toString();
+                    result.output.stdout += data.toString();
                     this.emit(this.enums.VAGRANT_STDOUT, data.toString());
                     this.emit(this.enums[logKey], data.toString());
                 });
 
                 vagrant.stderr.on('data', (data) => {
-                    error += data.toString();
+                    result.output.stderr += data.toString();
                     this.emit(this.enums.VAGRANT_STDERR, data.toString());
                     this.emit(this.enums[logKey], data.toString());
                 });
 
                 vagrant.on('close', (code) => {
+                    result.code = code;
+                    if (code !== 0) {
+                        error = code;
+                    }
+
                     if ( action.type === this.enums.VAGRANT_GLOBAL_STATUS
                       || action.type === this.enums.VAGRANT_PRUNE_GLOBAL_STATUS
                       || action.type === this.enums.VAGRANT_VM_STATUS
                       || action.type === this.enums.VAGRANT_INIT ) {
 
-                        this.updateglobalStatus(this.parseGlobalStatus(output));
-                        result = code;
+                        const defaultObj = {
+                            id: '',
+                            name: '',
+                            provider: '',
+                            state: '',
+                            directory: '',
+                        };
+
+                        result.output.stdout.split('\n').forEach((line) => {
+                            const strArray = line.split(' ').filter((el) => el.length !== 0);
+
+                            if (strArray[0] && strArray[0].length === 7) {
+                                const newObj = Object.assign({}, defaultObj);
+
+                                newObj.id = strArray[0];
+                                newObj.name = strArray[1];
+                                newObj.provider = strArray[2];
+                                newObj.state = strArray[3];
+                                newObj.directory = line.split(`${newObj.state} `)[1].trim();
+
+                                this.updateVmStatus(newObj);
+                            }
+                        });
+
+                        result.data = this.data.globalStatus;
 
                         if ( action.type === this.enums.VAGRANT_VM_STATUS ) {
-                            result = this.data.globalStatus.filter((vm) => vm.id === params.id)[0];
+                            result.data = this.data.globalStatus.filter((vm) => vm.id === params.id)[0];
                         }
                     }
 
@@ -362,3 +411,5 @@ export default class Vagrant extends EventEmitter {
         }
     }
 }
+
+module.exports = Vagrant;

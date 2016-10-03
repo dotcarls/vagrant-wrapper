@@ -64,12 +64,6 @@ test(deepEqualM, V.parseGlobalStatus(globalStatusOutput), globalStatus);
 test(deepEqualM, V.parseGlobalStatus(' '), []);
 test(deepEqualM, V.parseGlobalStatus(), []);
 
-test(deepEqualM, V.updateGlobalStatus(globalStatus), globalStatus);
-test(deepEqualM, V.data.globalStatus, globalStatus);
-test(deepEqualM, V.updateGlobalStatus(' '), globalStatus);
-test(deepEqualM, V.updateGlobalStatus([]), []);
-test(deepEqualM, V.data.globalStatus, []);
-
 test((t) => {
     V.completionHandler(null, null, null, (err) => {
         if (err) {
